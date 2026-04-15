@@ -1,0 +1,25 @@
+{
+  "name": "job-portal-api",
+  "version": "1.0.0",
+  "description": "Job Portal Backend API with Express.js",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^9.4.1"
+  },
+  "devDependencies": {},
+  "keywords": ["job-portal", "express", "api"],
+  "author": "",
+  "license": "ISC",
+  "comments": {
+    "mongodb": "To use MongoDB, run: npm install mongoose",
+    "env": "Create .env file with: MONGODB_URI=your_connection_string, JWT_SECRET=your_secret"
+  }
+}
