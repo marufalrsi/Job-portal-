@@ -16,11 +16,9 @@ export default function AuthForms({ selectedRole, onBack }) {
   const [error, setError] = useState('')
   const { login, signup } = useAuth()
 
-  // Login form state
   const [loginEmail, setLoginEmail] = useState('')
   const [loginPassword, setLoginPassword] = useState('')
 
-  // Signup form state
   const [signupName, setSignupName] = useState('')
   const [signupEmail, setSignupEmail] = useState('')
   const [signupPassword, setSignupPassword] = useState('')
@@ -82,8 +80,8 @@ export default function AuthForms({ selectedRole, onBack }) {
             {selectedRole === 'poster' ? 'Job Poster' : 'Job Seeker'} Portal
           </CardTitle>
           <CardDescription>
-            {selectedRole === 'poster' 
-              ? 'Post jobs and find the best candidates' 
+            {selectedRole === 'poster'
+              ? 'Post jobs and find the best candidates'
               : 'Find your dream job today'}
           </CardDescription>
         </CardHeader>
@@ -108,7 +106,7 @@ export default function AuthForms({ selectedRole, onBack }) {
                   <Input
                     id="login-email"
                     type="email"
-                    placeholder="you@example.com"
+                    placeholder="marufallrushafi@example.com"
                     value={loginEmail}
                     onChange={(e) => setLoginEmail(e.target.value)}
                     required
@@ -130,15 +128,7 @@ export default function AuthForms({ selectedRole, onBack }) {
                   {loading ? 'Logging in...' : 'Login'}
                 </Button>
               </form>
-              
-              <div className="rounded-lg bg-muted p-3 text-sm">
-                <p className="font-medium">Demo Account:</p>
-                <p className="text-muted-foreground">
-                  {selectedRole === 'poster' 
-                    ? 'poster@demo.com / password123'
-                    : 'seeker@demo.com / password123'}
-                </p>
-              </div>
+
             </TabsContent>
 
             <TabsContent value="signup" className="space-y-4 pt-4">
@@ -148,7 +138,7 @@ export default function AuthForms({ selectedRole, onBack }) {
                   <Input
                     id="signup-name"
                     type="text"
-                    placeholder="John Doe"
+                    placeholder="maruf all rushafi"
                     value={signupName}
                     onChange={(e) => setSignupName(e.target.value)}
                     required
@@ -159,7 +149,7 @@ export default function AuthForms({ selectedRole, onBack }) {
                   <Input
                     id="signup-email"
                     type="email"
-                    placeholder="you@example.com"
+                    placeholder="marufallrushafi@example.com"
                     value={signupEmail}
                     onChange={(e) => setSignupEmail(e.target.value)}
                     required

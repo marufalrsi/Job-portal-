@@ -14,13 +14,13 @@ export default function RoleSelection({ onSelectRole }) {
           </div>
           <h1 className="mb-3 text-4xl font-bold tracking-tight">Welcome to JobConnect</h1>
           <p className="mx-auto max-w-lg text-lg text-muted-foreground">
-            The platform that connects talented professionals with amazing opportunities. 
+            The platform that connects talented professionals with amazing opportunities.
             Choose how you want to use JobConnect today.
           </p>
         </div>
 
         <div className="grid gap-6 md:grid-cols-2">
-          <Card 
+          <Card
             className="group cursor-pointer transition-all hover:border-primary hover:shadow-lg"
             onClick={() => onSelectRole('poster')}
           >
@@ -54,7 +54,7 @@ export default function RoleSelection({ onSelectRole }) {
             </CardContent>
           </Card>
 
-          <Card 
+          <Card
             className="group cursor-pointer transition-all hover:border-primary hover:shadow-lg"
             onClick={() => onSelectRole('seeker')}
           >

@@ -12,9 +12,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { 
-  Plus, Pencil, Trash2, MapPin, DollarSign, Building2, 
-  Users, Eye, AlertCircle, Briefcase, Calendar, Mail, Phone, FileText 
+import {
+  Plus, Pencil, Trash2, MapPin, DollarSign, Building2,
+  Users, Eye, AlertCircle, Briefcase, Calendar, Mail, Phone, FileText
 } from 'lucide-react'
 
 export default function PosterDashboard() {
@@ -24,8 +24,7 @@ export default function PosterDashboard() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
-  
-  // Form state
+
   const [isCreateOpen, setIsCreateOpen] = useState(false)
   const [isEditOpen, setIsEditOpen] = useState(false)
   const [selectedJob, setSelectedJob] = useState(null)
@@ -38,11 +37,9 @@ export default function PosterDashboard() {
     location: ''
   })
 
-  // Application view state
   const [viewingApplications, setViewingApplications] = useState(null)
   const [jobApplications, setJobApplications] = useState([])
 
-  // Load jobs and applications
   useEffect(() => {
     loadData()
   }, [token])
@@ -332,7 +329,7 @@ export default function PosterDashboard() {
         </Alert>
       )}
 
-      {/* Stats Cards */}
+      {}
       <div className="mb-8 grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -467,9 +464,30 @@ export default function PosterDashboard() {
                       <Phone className="h-4 w-4 text-muted-foreground" />
                       <span>{app.phone}</span>
                     </div>
-                    <div className="flex items-start gap-2 text-sm">
-                      <FileText className="mt-0.5 h-4 w-4 text-muted-foreground" />
-                      <p className="text-muted-foreground line-clamp-3">{app.resume}</p>
+                    <div className="flex flex-col gap-2 text-sm">
+                      <Label className="mb-1 flex items-center gap-2">
+                        <FileText className="h-4 w-4" />
+                        Candidate CV
+                      </Label>
+                      {app.cv ? (
+                        <div className="rounded-lg bg-muted p-4 text-sm space-y-2">
+                          <p className="font-semibold">{app.cv.firstName} {app.cv.lastName}</p>
+                          <p>{app.cv.address}</p>
+                          <p>{app.cv.email}</p>
+                          <p>{app.cv.gender} · {app.cv.age} years</p>
+                          <p className="font-medium">Education:</p>
+                          <p>{app.cv.education.institution} — {app.cv.education.subject}</p>
+                          <p>{app.cv.education.country} | {app.cv.education.passingYear} | {app.cv.education.grade}</p>
+                          <p className="font-medium">Experience:</p>
+                          <p>{app.cv.experience.project}</p>
+                          <p>{app.cv.experience.role} — {app.cv.experience.years} years</p>
+                          <p className="text-muted-foreground">Languages: {app.cv.languages?.join(', ')}</p>
+                        </div>
+                      ) : (
+                        <div className="rounded-lg bg-muted p-4 text-sm whitespace-pre-wrap">
+                          {app.resume}
+                        </div>
+                      )}
                     </div>
                     <p className="text-xs text-muted-foreground">
                       Applied on {formatDate(app.createdAt)}
@@ -482,7 +500,7 @@ export default function PosterDashboard() {
         </TabsContent>
       </Tabs>
 
-      {/* Edit Job Dialog */}
+      {}
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
@@ -570,7 +588,7 @@ export default function PosterDashboard() {
         </DialogContent>
       </Dialog>
 
-      {/* View Applications for Job Dialog */}
+      {}
       <Dialog open={!!viewingApplications} onOpenChange={() => setViewingApplications(null)}>
         <DialogContent className="max-w-3xl max-h-[80vh]">
           <DialogHeader>
@@ -609,11 +627,27 @@ export default function PosterDashboard() {
                       <div>
                         <Label className="mb-2 flex items-center gap-2">
                           <FileText className="h-4 w-4" />
-                          Resume / Cover Letter
+                          Candidate CV
                         </Label>
-                        <div className="rounded-lg bg-muted p-4 text-sm whitespace-pre-wrap">
-                          {app.resume}
-                        </div>
+                        {app.cv ? (
+                          <div className="rounded-lg bg-muted p-4 text-sm space-y-2">
+                            <p className="font-semibold">{app.cv.firstName} {app.cv.lastName}</p>
+                            <p>{app.cv.address}</p>
+                            <p>{app.cv.email}</p>
+                            <p>{app.cv.gender} · {app.cv.age} years</p>
+                            <p className="font-medium">Education:</p>
+                            <p>{app.cv.education.institution} — {app.cv.education.subject}</p>
+                            <p>{app.cv.education.country} | {app.cv.education.passingYear} | {app.cv.education.grade}</p>
+                            <p className="font-medium">Experience:</p>
+                            <p>{app.cv.experience.project}</p>
+                            <p>{app.cv.experience.role} — {app.cv.experience.years} years</p>
+                            <p className="text-muted-foreground">Languages: {app.cv.languages?.join(', ')}</p>
+                          </div>
+                        ) : (
+                          <div className="rounded-lg bg-muted p-4 text-sm whitespace-pre-wrap">
+                            {app.resume}
+                          </div>
+                        )}
                       </div>
                     </CardContent>
                   </Card>
