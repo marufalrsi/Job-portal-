@@ -42,7 +42,7 @@ const jobTitles = ['Software Developer', 'Senior Developer', 'Web Developer', 'M
 
 const locations = ['Dhaka', 'Chittagong', 'Sylhet', 'Khulna', 'Rajshahi', 'Barisal', 'Rangpur', 'Gazipur', 'Narayanganj', 'Pirojpur'];
 
-const salaries = ['৳ 15,000 - 25,000', '৳ 20,000 - 30,000', '৳ 25,000 - 35,000', '৳ 30,000 - 40,000', '৳ 35,000 - 45,000', '৳ 40,000 - 49,000'];
+const salaries = ['৳ ৩০,০০০ - ৫০,০০০', '৳ ৫০,০০০ - ৭০,০০০', '৳ ৭০,০০০ - ৯০,০০০', '৳ ৯০,০০০ - ১,২০,০০০', '৳ ১,২০,০০০ - ১,৫০,০০০', '৳ ১,৫০,০০০ - ২,০০,০০০', '৳ ২,০০,০০০ - ২,৫০,০০০'];
 
 const generateDescription = () => {
   const templates = [

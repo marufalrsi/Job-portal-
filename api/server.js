@@ -60,18 +60,18 @@ const cvSchema = new mongoose.Schema({
   email: { type: String, required: true },
   gender: { type: String, required: true },
   age: { type: Number, required: true },
-  education: {
+  education: [{
     institution: { type: String, required: true },
     country: { type: String, required: true },
     passingYear: { type: String, required: true },
     grade: { type: String, required: true },
     subject: { type: String, required: true }
-  },
-  experience: {
+  }],
+  experience: [{
     project: { type: String, required: true },
     role: { type: String, required: true },
     years: { type: String, required: true }
-  },
+  }],
   languages: [{ type: String }]
 }, { _id: false })
 
@@ -83,7 +83,7 @@ const applicationSchema = new mongoose.Schema({
   email: { type: String, required: true },
   phone: { type: String, required: true },
   resume: { type: String, required: true },
-  cv: { type: cvSchema, required: true },
+  cv: { type: cvSchema, required: false },
   createdAt: { type: Date, default: Date.now }
 });
 
@@ -320,16 +320,34 @@ app.post('/api/apply', authenticateToken, async (req, res) => {
       return res.status(403).json({ error: 'Only job seekers can apply for jobs' });
     }
 
-    const { jobId, name, email, phone, resume, cv } = req.body;
+      const { jobId, name, email, phone, resume, cv } = req.body;
 
-    if (!jobId || !name || !email || !phone || !resume || !cv) {
-      return res.status(400).json({ error: 'All fields and CV details are required' });
+    if (!jobId || !name || !email || !phone || !resume || !resume.trim()) {
+      return res.status(400).json({ error: 'All fields and application summary are required' });
     }
 
-    const requiredCvFields = [cv.firstName, cv.lastName, cv.address, cv.email, cv.gender, cv.age, cv.education?.institution, cv.education?.country, cv.education?.passingYear, cv.education?.grade, cv.education?.subject, cv.experience?.project, cv.experience?.role, cv.experience?.years, cv.languages?.length]
+    if (cv) {
+      const requiredCvFields = [
+        cv.firstName,
+        cv.lastName,
+        cv.address,
+        cv.email,
+        cv.gender,
+        cv.age,
+        cv.education?.length > 0 && cv.education[0].institution,
+        cv.education?.length > 0 && cv.education[0].country,
+        cv.education?.length > 0 && cv.education[0].passingYear,
+        cv.education?.length > 0 && cv.education[0].grade,
+        cv.education?.length > 0 && cv.education[0].subject,
+        cv.experience?.length > 0 && cv.experience[0].project,
+        cv.experience?.length > 0 && cv.experience[0].role,
+        cv.experience?.length > 0 && cv.experience[0].years,
+        cv.languages?.length > 0
+      ]
 
-    if (requiredCvFields.some(field => !field)) {
-      return res.status(400).json({ error: 'Complete CV details are required for the application' });
+      if (requiredCvFields.some(field => !field)) {
+        return res.status(400).json({ error: 'Complete CV details are required for the application' });
+      }
     }
 
     const job = await Job.findById(jobId);

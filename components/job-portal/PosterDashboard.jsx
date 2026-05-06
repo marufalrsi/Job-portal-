@@ -40,6 +40,16 @@ export default function PosterDashboard() {
   const [viewingApplications, setViewingApplications] = useState(null)
   const [jobApplications, setJobApplications] = useState([])
 
+  const getDocId = (doc) => doc?._id || doc?.id || ''
+  const normalizeId = (id) => id ? String(id) : ''
+  const getApplicationCount = (jobId) => {
+    const normalizedJobId = normalizeId(jobId)
+    return applications.filter(app => normalizeId(app.jobId) === normalizedJobId).length
+  }
+
+  const getCvEducation = (cv) => Array.isArray(cv?.education) ? cv.education[0] : cv?.education
+  const getCvExperience = (cv) => Array.isArray(cv?.experience) ? cv.experience[0] : cv?.experience
+
   useEffect(() => {
     loadData()
   }, [token])
@@ -116,7 +126,7 @@ export default function PosterDashboard() {
     setSuccess('')
 
     try {
-      const response = await authFetch(`/api/jobs/${selectedJob.id}`, {
+      const response = await authFetch(`/api/jobs/${getDocId(selectedJob)}`, {
         method: 'PUT',
         body: JSON.stringify(formData)
       })
@@ -174,7 +184,7 @@ export default function PosterDashboard() {
 
   const viewApplicationsForJob = async (job) => {
     try {
-      const response = await authFetch(`/api/apply/job/${job.id}`)
+      const response = await authFetch(`/api/apply/job/${getDocId(job)}`)
       if (!response.ok) {
         throw new Error(await response.json().then(data => data.error || 'Failed to load applications'))
       }
@@ -184,10 +194,6 @@ export default function PosterDashboard() {
     } catch (err) {
       setError(err.message)
     }
-  }
-
-  const getApplicationCount = (jobId) => {
-    return applications.filter(app => app.jobId === jobId).length
   }
 
   const formatDate = (dateString) => {
@@ -238,7 +244,7 @@ export default function PosterDashboard() {
                     <Input
                       id="title"
                       name="title"
-                      placeholder="e.g., Senior React Developer"
+                      placeholder="e.g., Senior Software Developer"
                       value={formData.title}
                       onChange={handleInputChange}
                       required
@@ -249,7 +255,7 @@ export default function PosterDashboard() {
                     <Input
                       id="company"
                       name="company"
-                      placeholder="e.g., Tech Corp"
+                      placeholder="e.g., Infosys Bangladesh"
                       value={formData.company}
                       onChange={handleInputChange}
                       required
@@ -262,7 +268,7 @@ export default function PosterDashboard() {
                     <Input
                       id="salary"
                       name="salary"
-                      placeholder="e.g., $80,000 - $120,000"
+                      placeholder="e.g., ৳ 30,000 - 50,000"
                       value={formData.salary}
                       onChange={handleInputChange}
                       required
@@ -273,7 +279,7 @@ export default function PosterDashboard() {
                     <Input
                       id="location"
                       name="location"
-                      placeholder="e.g., San Francisco, CA (Remote)"
+                      placeholder="e.g., Dhaka, Bangladesh (Remote)"
                       value={formData.location}
                       onChange={handleInputChange}
                       required
@@ -285,7 +291,7 @@ export default function PosterDashboard() {
                   <Textarea
                     id="description"
                     name="description"
-                    placeholder="Describe the role, responsibilities, and what makes this opportunity great..."
+                    placeholder="Describe the role, responsibilities, and benefits offered. Example: We are looking for talented professionals to join our growing team in Bangladesh..."
                     value={formData.description}
                     onChange={handleInputChange}
                     rows={4}
@@ -297,7 +303,7 @@ export default function PosterDashboard() {
                   <Textarea
                     id="requirements"
                     name="requirements"
-                    placeholder="List the skills, experience, and qualifications needed..."
+                    placeholder="Example: Bachelor's degree, 2+ years experience, Strong communication skills, Knowledge of relevant technologies..."
                     value={formData.requirements}
                     onChange={handleInputChange}
                     rows={4}
@@ -384,7 +390,7 @@ export default function PosterDashboard() {
           ) : (
             <div className="grid gap-4">
               {jobs.map(job => (
-                <Card key={job.id}>
+                <Card key={getDocId(job)}>
                   <CardHeader>
                     <div className="flex items-start justify-between">
                       <div>
@@ -406,7 +412,7 @@ export default function PosterDashboard() {
                       </div>
                       <Badge variant="secondary">
                         <Users className="mr-1 h-3 w-3" />
-                        {getApplicationCount(job.id)} Applications
+                        {getApplicationCount(getDocId(job))} Applications
                       </Badge>
                     </div>
                   </CardHeader>
@@ -425,7 +431,7 @@ export default function PosterDashboard() {
                       <Pencil className="mr-2 h-4 w-4" />
                       Edit
                     </Button>
-                    <Button variant="outline" size="sm" className="text-destructive hover:text-destructive" onClick={() => handleDelete(job.id)}>
+                    <Button variant="outline" size="sm" className="text-destructive hover:text-destructive" onClick={() => handleDelete(getDocId(job))}>
                       <Trash2 className="mr-2 h-4 w-4" />
                       Delete
                     </Button>
@@ -448,7 +454,7 @@ export default function PosterDashboard() {
           ) : (
             <div className="grid gap-4 md:grid-cols-2">
               {applications.map(app => (
-                <Card key={app.id}>
+                <Card key={getDocId(app)}>
                   <CardHeader>
                     <CardTitle className="text-lg">{app.name}</CardTitle>
                     <CardDescription>Applied for: {app.jobTitle}</CardDescription>
@@ -470,19 +476,25 @@ export default function PosterDashboard() {
                         Candidate CV
                       </Label>
                       {app.cv ? (
-                        <div className="rounded-lg bg-muted p-4 text-sm space-y-2">
-                          <p className="font-semibold">{app.cv.firstName} {app.cv.lastName}</p>
-                          <p>{app.cv.address}</p>
-                          <p>{app.cv.email}</p>
-                          <p>{app.cv.gender} · {app.cv.age} years</p>
-                          <p className="font-medium">Education:</p>
-                          <p>{app.cv.education.institution} — {app.cv.education.subject}</p>
-                          <p>{app.cv.education.country} | {app.cv.education.passingYear} | {app.cv.education.grade}</p>
-                          <p className="font-medium">Experience:</p>
-                          <p>{app.cv.experience.project}</p>
-                          <p>{app.cv.experience.role} — {app.cv.experience.years} years</p>
-                          <p className="text-muted-foreground">Languages: {app.cv.languages?.join(', ')}</p>
-                        </div>
+                        (() => {
+                          const education = Array.isArray(app.cv.education) ? app.cv.education[0] : app.cv.education
+                          const experience = Array.isArray(app.cv.experience) ? app.cv.experience[0] : app.cv.experience
+                          return (
+                            <div className="rounded-lg bg-muted p-4 text-sm space-y-2">
+                              <p className="font-semibold">{app.cv.firstName} {app.cv.lastName}</p>
+                              <p>{app.cv.address}</p>
+                              <p>{app.cv.email}</p>
+                              <p>{app.cv.gender} · {app.cv.age} years</p>
+                              <p className="font-medium">Education:</p>
+                              <p>{education?.institution || 'N/A'} — {education?.subject || 'N/A'}</p>
+                              <p>{education?.country || 'N/A'} | {education?.passingYear || 'N/A'} | {education?.grade || 'N/A'}</p>
+                              <p className="font-medium">Experience:</p>
+                              <p>{experience?.project || 'N/A'}</p>
+                              <p>{experience?.role || 'N/A'} — {experience?.years || 'N/A'} years</p>
+                              <p className="text-muted-foreground">Languages: {Array.isArray(app.cv.languages) ? app.cv.languages.join(', ') : app.cv.languages}</p>
+                            </div>
+                          )
+                        })()
                       ) : (
                         <div className="rounded-lg bg-muted p-4 text-sm whitespace-pre-wrap">
                           {app.resume}
@@ -606,7 +618,7 @@ export default function PosterDashboard() {
             ) : (
               <div className="space-y-4">
                 {jobApplications.map(app => (
-                  <Card key={app.id}>
+                  <Card key={getDocId(app)}>
                     <CardHeader>
                       <CardTitle className="text-lg">{app.name}</CardTitle>
                       <CardDescription>
@@ -630,19 +642,25 @@ export default function PosterDashboard() {
                           Candidate CV
                         </Label>
                         {app.cv ? (
-                          <div className="rounded-lg bg-muted p-4 text-sm space-y-2">
-                            <p className="font-semibold">{app.cv.firstName} {app.cv.lastName}</p>
-                            <p>{app.cv.address}</p>
-                            <p>{app.cv.email}</p>
-                            <p>{app.cv.gender} · {app.cv.age} years</p>
-                            <p className="font-medium">Education:</p>
-                            <p>{app.cv.education.institution} — {app.cv.education.subject}</p>
-                            <p>{app.cv.education.country} | {app.cv.education.passingYear} | {app.cv.education.grade}</p>
-                            <p className="font-medium">Experience:</p>
-                            <p>{app.cv.experience.project}</p>
-                            <p>{app.cv.experience.role} — {app.cv.experience.years} years</p>
-                            <p className="text-muted-foreground">Languages: {app.cv.languages?.join(', ')}</p>
-                          </div>
+                          (() => {
+                            const education = Array.isArray(app.cv.education) ? app.cv.education[0] : app.cv.education
+                            const experience = Array.isArray(app.cv.experience) ? app.cv.experience[0] : app.cv.experience
+                            return (
+                              <div className="rounded-lg bg-muted p-4 text-sm space-y-2">
+                                <p className="font-semibold">{app.cv.firstName} {app.cv.lastName}</p>
+                                <p>{app.cv.address}</p>
+                                <p>{app.cv.email}</p>
+                                <p>{app.cv.gender} · {app.cv.age} years</p>
+                                <p className="font-medium">Education:</p>
+                                <p>{education?.institution || 'N/A'} — {education?.subject || 'N/A'}</p>
+                                <p>{education?.country || 'N/A'} | {education?.passingYear || 'N/A'} | {education?.grade || 'N/A'}</p>
+                                <p className="font-medium">Experience:</p>
+                                <p>{experience?.project || 'N/A'}</p>
+                                <p>{experience?.role || 'N/A'} — {experience?.years || 'N/A'} years</p>
+                                <p className="text-muted-foreground">Languages: {Array.isArray(app.cv.languages) ? app.cv.languages.join(', ') : app.cv.languages}</p>
+                              </div>
+                            )
+                          })()
                         ) : (
                           <div className="rounded-lg bg-muted p-4 text-sm whitespace-pre-wrap">
                             {app.resume}

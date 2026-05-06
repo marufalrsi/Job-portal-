@@ -103,6 +103,26 @@ const generateCvText = (cv) => {
   ].join('\n')
 }
 
+const isValidCv = (cv) => {
+  if (!cv) return false
+  if (!cv.firstName || !cv.lastName || !cv.address || !cv.email || !cv.gender || !cv.age) return false
+  if (!Array.isArray(cv.education) || cv.education.length === 0) return false
+  if (!Array.isArray(cv.experience) || cv.experience.length === 0) return false
+  if (!Array.isArray(cv.languages) || cv.languages.length === 0) return false
+
+  const invalidEducation = cv.education.some(edu =>
+    !edu.institution || !edu.country || !edu.passingYear || !edu.grade || !edu.subject
+  )
+  if (invalidEducation) return false
+
+  const invalidExperience = cv.experience.some(exp =>
+    !exp.project || !exp.role || !exp.years
+  )
+  if (invalidExperience) return false
+
+  return true
+}
+
 export default function SeekerDashboard() {
   const { user, token, authFetch } = useAuth()
   const [jobs, setJobs] = useState([])
@@ -201,7 +221,8 @@ export default function SeekerDashboard() {
     setError('')
     setApplicationForm(prev => ({
       ...prev,
-      resume: prev.resume.trim() || generateCvText(cvData)
+      phone: prev.phone || (cvData?.phone ? cvData.phone : ''),
+      resume: prev.resume.trim() || (isValidCv(cvData) ? generateCvText(cvData) : '')
     }))
   }
 
@@ -215,25 +236,30 @@ export default function SeekerDashboard() {
     setError('')
     setSuccess('')
 
-    if (!cvData?.firstName) {
-      setError('Please create and save your CV before applying.')
+    const resumeText = applicationForm.resume.trim() || generateCvText(cvData)
+
+    if (!resumeText) {
+      setError('Please save your CV or add a cover letter / application note before applying.')
       return
     }
 
-    const resumeText = applicationForm.resume.trim() || generateCvText(cvData)
+    const applicationPayload = {
+      jobId: applyingTo._id || applyingTo.id,
+      ...applicationForm,
+      resume: resumeText
+    }
+
+    if (isValidCv(cvData)) {
+      applicationPayload.cv = {
+        ...cvData,
+        age: Number(cvData.age)
+      }
+    }
 
     try {
       const response = await authFetch('/api/apply', {
         method: 'POST',
-        body: JSON.stringify({
-          jobId: applyingTo.id,
-          ...applicationForm,
-          resume: resumeText,
-          cv: {
-            ...cvData,
-            age: Number(cvData.age)
-          }
-        })
+        body: JSON.stringify(applicationPayload)
       })
 
       if (!response.ok) {
@@ -241,7 +267,8 @@ export default function SeekerDashboard() {
       }
 
       const application = await response.json()
-      const newAppliedJobs = [...appliedJobs, applyingTo.id]
+      const appliedJobId = applyingTo._id || applyingTo.id
+      const newAppliedJobs = [...appliedJobs, appliedJobId]
       setAppliedJobs(newAppliedJobs)
       localStorage.setItem('applied_jobs', JSON.stringify(newAppliedJobs))
 
@@ -502,11 +529,13 @@ export default function SeekerDashboard() {
                   required
                 />
               </div>
-              <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 text-sm text-muted-foreground">
+              <div className={`rounded-lg border p-4 text-sm ${cvData?.firstName ? 'border-primary/20 bg-primary/5 text-muted-foreground' : 'border-destructive/20 bg-destructive/10 text-destructive'}`}>
                 {cvData?.firstName ? (
                   <p>Your saved CV will be attached to this application. Add extra notes below if needed.</p>
                 ) : (
-                  <p className="text-destructive">Save your CV first so recruiters can see your full profile.</p>
+                  <p>
+                    No saved CV found. You can still apply by entering a cover letter or application note below.
+                  </p>
                 )}
               </div>
               <div className="space-y-2">
