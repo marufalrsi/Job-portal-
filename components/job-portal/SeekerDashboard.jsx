@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/context/AuthContext'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
@@ -139,11 +140,12 @@ export default function SeekerDashboard() {
   const [isCvPreviewOpen, setIsCvPreviewOpen] = useState(false)
   const [applyingTo, setApplyingTo] = useState(null)
   const [appliedJobs, setAppliedJobs] = useState([])
+  const [attachCv, setAttachCv] = useState(false)
   const [applicationForm, setApplicationForm] = useState({
     name: '',
     email: '',
     phone: '',
-    resume: ''
+    coverLetter: ''
   })
   const [cvForm, setCvForm] = useState(emptyCv)
   const [cvData, setCvData] = useState(null)
@@ -164,6 +166,7 @@ export default function SeekerDashboard() {
         email: prev.email || user.email || '',
         phone: prev.phone || user.phone || ''
       }))
+      loadAppliedJobs()
     }
   }, [user])
 
@@ -195,6 +198,20 @@ export default function SeekerDashboard() {
     }
   }, [searchTerm, jobs])
 
+  const loadAppliedJobs = async () => {
+    try {
+      const response = await authFetch('/api/apply/my-applications')
+      if (!response.ok) {
+        throw new Error(await response.json().then(data => data.error || 'Failed to load your applications'))
+      }
+      const applications = await response.json()
+      const appliedIds = applications.map(app => app.jobId)
+      setAppliedJobs(appliedIds)
+    } catch (err) {
+      console.warn('Failed to load applied jobs:', err)
+    }
+  }
+
   const loadJobs = async () => {
     try {
       setLoading(true)
@@ -205,9 +222,6 @@ export default function SeekerDashboard() {
       const jobsData = await response.json()
       setJobs(jobsData)
       setFilteredJobs(jobsData)
-
-      const applied = JSON.parse(localStorage.getItem('applied_jobs') || '[]')
-      setAppliedJobs(applied)
     } catch (err) {
       setError(err.message)
     } finally {
@@ -219,10 +233,10 @@ export default function SeekerDashboard() {
     setApplyingTo(job)
     setIsApplyOpen(true)
     setError('')
+    setAttachCv(!!isValidCv(cvData))
     setApplicationForm(prev => ({
       ...prev,
-      phone: prev.phone || (cvData?.phone ? cvData.phone : ''),
-      resume: prev.resume.trim() || (isValidCv(cvData) ? generateCvText(cvData) : '')
+      phone: prev.phone || (cvData?.phone ? cvData.phone : '')
     }))
   }
 
@@ -236,7 +250,8 @@ export default function SeekerDashboard() {
     setError('')
     setSuccess('')
 
-    const resumeText = applicationForm.resume.trim() || generateCvText(cvData)
+    const coverLetterText = applicationForm.coverLetter.trim()
+    const resumeText = coverLetterText || generateCvText(cvData)
 
     if (!resumeText) {
       setError('Please save your CV or add a cover letter / application note before applying.')
@@ -246,15 +261,18 @@ export default function SeekerDashboard() {
     const applicationPayload = {
       jobId: applyingTo._id || applyingTo.id,
       ...applicationForm,
+      coverLetter: coverLetterText,
       resume: resumeText
     }
 
-    if (isValidCv(cvData)) {
+    if (isValidCv(cvData) && attachCv) {
       applicationPayload.cv = {
         ...cvData,
         age: Number(cvData.age)
       }
     }
+
+    console.log('Application Payload:', applicationPayload)
 
     try {
       const response = await authFetch('/api/apply', {
@@ -268,20 +286,21 @@ export default function SeekerDashboard() {
 
       const application = await response.json()
       const appliedJobId = applyingTo._id || applyingTo.id
-      const newAppliedJobs = [...appliedJobs, appliedJobId]
-      setAppliedJobs(newAppliedJobs)
-      localStorage.setItem('applied_jobs', JSON.stringify(newAppliedJobs))
+      setAppliedJobs(prev => [...new Set([...prev, appliedJobId])])
 
       setSuccess(`Successfully applied to ${applyingTo.title} at ${applyingTo.company}!`)
       setIsApplyOpen(false)
       setApplyingTo(null)
-      setApplicationForm(prev => ({ ...prev, phone: '', resume: '' }))
+      setApplicationForm(prev => ({ ...prev, phone: '', coverLetter: '' }))
     } catch (err) {
       setError(err.message)
     }
   }
 
-  const hasApplied = (jobId) => appliedJobs.includes(jobId)
+  const hasApplied = (jobId) => {
+    const normalizedJobId = String(jobId)
+    return appliedJobs.some(id => String(id) === normalizedJobId)
+  }
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -531,25 +550,38 @@ export default function SeekerDashboard() {
               </div>
               <div className={`rounded-lg border p-4 text-sm ${cvData?.firstName ? 'border-primary/20 bg-primary/5 text-muted-foreground' : 'border-destructive/20 bg-destructive/10 text-destructive'}`}>
                 {cvData?.firstName ? (
-                  <p>Your saved CV will be attached to this application. Add extra notes below if needed.</p>
+                  <p>Your saved CV is available. Check the box below to attach it to this application.</p>
                 ) : (
                   <p>
                     No saved CV found. You can still apply by entering a cover letter or application note below.
                   </p>
                 )}
               </div>
+              {cvData?.firstName && (
+                <div className="flex items-start gap-3">
+                  <Checkbox
+                    id="attach-cv"
+                    checked={attachCv}
+                    onCheckedChange={(checked) => setAttachCv(Boolean(checked))}
+                  />
+                  <div className="space-y-1 text-sm">
+                    <Label htmlFor="attach-cv">Attach saved CV</Label>
+                    <p className="text-xs text-muted-foreground">When checked, your saved CV will be sent to the job poster along with your cover letter.</p>
+                  </div>
+                </div>
+              )}
               <div className="space-y-2">
-                <Label htmlFor="app-resume">Additional Notes / Cover Letter</Label>
+                <Label htmlFor="app-cover-letter">Additional Notes / Cover Letter</Label>
                 <Textarea
-                  id="app-resume"
-                  name="resume"
-                  placeholder="Add an optional note or cover letter here. If left blank, your saved CV will be used as the application summary."
-                  value={applicationForm.resume}
+                  id="app-cover-letter"
+                  name="coverLetter"
+                  placeholder="Add an optional note or cover letter for the job poster here. Your saved CV will be attached automatically if available."
+                  value={applicationForm.coverLetter}
                   onChange={handleApplicationChange}
                   rows={8}
                 />
                 <p className="text-xs text-muted-foreground">
-                  You can leave this blank to submit your saved CV in its entirety.
+                  Your saved CV will be sent automatically with this application when available.
                 </p>
               </div>
             </div>

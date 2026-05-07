@@ -53,7 +53,7 @@ export function AuthProvider({ children }) {
     }
   }
 
-  const login = async (email, password) => {
+  const login = async (email, password, expectedRole) => {
     setError(null)
     try {
       const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
@@ -66,6 +66,13 @@ export function AuthProvider({ children }) {
 
       if (!response.ok) {
         throw new Error(data.error || 'Login failed')
+      }
+
+      if (expectedRole && data.user?.role !== expectedRole) {
+        return {
+          success: false,
+          error: `Please login with a ${expectedRole} account. This email is registered as a ${data.user.role} account.`
+        }
       }
 
       localStorage.setItem('jobportal_token', data.token)

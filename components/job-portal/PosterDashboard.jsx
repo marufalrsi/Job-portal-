@@ -470,36 +470,41 @@ export default function PosterDashboard() {
                       <Phone className="h-4 w-4 text-muted-foreground" />
                       <span>{app.phone}</span>
                     </div>
-                    <div className="flex flex-col gap-2 text-sm">
-                      <Label className="mb-1 flex items-center gap-2">
-                        <FileText className="h-4 w-4" />
-                        Candidate CV
-                      </Label>
-                      {app.cv ? (
-                        (() => {
-                          const education = Array.isArray(app.cv.education) ? app.cv.education[0] : app.cv.education
-                          const experience = Array.isArray(app.cv.experience) ? app.cv.experience[0] : app.cv.experience
-                          return (
-                            <div className="rounded-lg bg-muted p-4 text-sm space-y-2">
-                              <p className="font-semibold">{app.cv.firstName} {app.cv.lastName}</p>
-                              <p>{app.cv.address}</p>
-                              <p>{app.cv.email}</p>
-                              <p>{app.cv.gender} · {app.cv.age} years</p>
-                              <p className="font-medium">Education:</p>
-                              <p>{education?.institution || 'N/A'} — {education?.subject || 'N/A'}</p>
-                              <p>{education?.country || 'N/A'} | {education?.passingYear || 'N/A'} | {education?.grade || 'N/A'}</p>
-                              <p className="font-medium">Experience:</p>
-                              <p>{experience?.project || 'N/A'}</p>
-                              <p>{experience?.role || 'N/A'} — {experience?.years || 'N/A'} years</p>
-                              <p className="text-muted-foreground">Languages: {Array.isArray(app.cv.languages) ? app.cv.languages.join(', ') : app.cv.languages}</p>
-                            </div>
-                          )
-                        })()
-                      ) : (
-                        <div className="rounded-lg bg-muted p-4 text-sm whitespace-pre-wrap">
-                          {app.resume}
-                        </div>
-                      )}
+                    <div className="flex flex-col gap-4 text-sm">
+                      <div className="rounded-lg border-2 border-primary/30 bg-primary/5 p-4 text-sm space-y-2">
+                        <p className="font-semibold text-primary">Cover Letter / Extra Notes</p>
+                        {app.coverLetter ? (
+                          <p className="whitespace-pre-wrap">{app.coverLetter}</p>
+                        ) : (
+                          <p className="italic text-muted-foreground">No extra notes provided by the applicant.</p>
+                        )}
+                      </div>
+                      <div className="rounded-lg bg-muted p-4 text-sm space-y-2">
+                        <p className="font-semibold">Candidate CV</p>
+                        {app.cv ? (
+                          (() => {
+                            const education = Array.isArray(app.cv.education) ? app.cv.education[0] : app.cv.education
+                            const experience = Array.isArray(app.cv.experience) ? app.cv.experience[0] : app.cv.experience
+                            return (
+                              <div className="space-y-2">
+                                <p>{app.cv.firstName} {app.cv.lastName}</p>
+                                <p>{app.cv.address}</p>
+                                <p>{app.cv.email}</p>
+                                <p>{app.cv.gender} · {app.cv.age} years</p>
+                                <p className="font-medium">Education:</p>
+                                <p>{education?.institution || 'N/A'} — {education?.subject || 'N/A'}</p>
+                                <p>{education?.country || 'N/A'} | {education?.passingYear || 'N/A'} | {education?.grade || 'N/A'}</p>
+                                <p className="font-medium">Experience:</p>
+                                <p>{experience?.project || 'N/A'}</p>
+                                <p>{experience?.role || 'N/A'} — {experience?.years || 'N/A'} years</p>
+                                <p className="text-muted-foreground">Languages: {Array.isArray(app.cv.languages) ? app.cv.languages.join(', ') : app.cv.languages}</p>
+                              </div>
+                            )
+                          })()
+                        ) : (
+                          <p className="whitespace-pre-wrap">{app.resume}</p>
+                        )}
+                      </div>
                     </div>
                     <p className="text-xs text-muted-foreground">
                       Applied on {formatDate(app.createdAt)}
@@ -636,36 +641,41 @@ export default function PosterDashboard() {
                         <Phone className="h-4 w-4 text-muted-foreground" />
                         <span>{app.phone}</span>
                       </div>
-                      <div>
-                        <Label className="mb-2 flex items-center gap-2">
-                          <FileText className="h-4 w-4" />
-                          Candidate CV
-                        </Label>
-                        {app.cv ? (
-                          (() => {
-                            const education = Array.isArray(app.cv.education) ? app.cv.education[0] : app.cv.education
-                            const experience = Array.isArray(app.cv.experience) ? app.cv.experience[0] : app.cv.experience
-                            return (
-                              <div className="rounded-lg bg-muted p-4 text-sm space-y-2">
-                                <p className="font-semibold">{app.cv.firstName} {app.cv.lastName}</p>
-                                <p>{app.cv.address}</p>
-                                <p>{app.cv.email}</p>
-                                <p>{app.cv.gender} · {app.cv.age} years</p>
-                                <p className="font-medium">Education:</p>
-                                <p>{education?.institution || 'N/A'} — {education?.subject || 'N/A'}</p>
-                                <p>{education?.country || 'N/A'} | {education?.passingYear || 'N/A'} | {education?.grade || 'N/A'}</p>
-                                <p className="font-medium">Experience:</p>
-                                <p>{experience?.project || 'N/A'}</p>
-                                <p>{experience?.role || 'N/A'} — {experience?.years || 'N/A'} years</p>
-                                <p className="text-muted-foreground">Languages: {Array.isArray(app.cv.languages) ? app.cv.languages.join(', ') : app.cv.languages}</p>
-                              </div>
-                            )
-                          })()
-                        ) : (
-                          <div className="rounded-lg bg-muted p-4 text-sm whitespace-pre-wrap">
-                            {app.resume}
-                          </div>
-                        )}
+                      <div className="space-y-4">
+                        <div className="rounded-lg border-2 border-primary/30 bg-primary/5 p-4 text-sm space-y-2">
+                          <p className="font-semibold text-primary">Cover Letter / Extra Notes</p>
+                          {app.coverLetter ? (
+                            <p className="whitespace-pre-wrap">{app.coverLetter}</p>
+                          ) : (
+                            <p className="italic text-muted-foreground">No extra notes provided by the applicant.</p>
+                          )}
+                        </div>
+                        <div className="rounded-lg bg-muted p-4 text-sm space-y-2">
+                          <p className="font-semibold">Candidate CV</p>
+                          {app.cv ? (
+                            (() => {
+                              const education = Array.isArray(app.cv.education) ? app.cv.education[0] : app.cv.education
+                              const experience = Array.isArray(app.cv.experience) ? app.cv.experience[0] : app.cv.experience
+                              return (
+                                <div className="space-y-2">
+                                  <p className="font-semibold">{app.cv.firstName} {app.cv.lastName}</p>
+                                  <p>{app.cv.address}</p>
+                                  <p>{app.cv.email}</p>
+                                  <p>{app.cv.gender} · {app.cv.age} years</p>
+                                  <p className="font-medium">Education:</p>
+                                  <p>{education?.institution || 'N/A'} — {education?.subject || 'N/A'}</p>
+                                  <p>{education?.country || 'N/A'} | {education?.passingYear || 'N/A'} | {education?.grade || 'N/A'}</p>
+                                  <p className="font-medium">Experience:</p>
+                                  <p>{experience?.project || 'N/A'}</p>
+                                  <p>{experience?.role || 'N/A'} — {experience?.years || 'N/A'} years</p>
+                                  <p className="text-muted-foreground">Languages: {Array.isArray(app.cv.languages) ? app.cv.languages.join(', ') : app.cv.languages}</p>
+                                </div>
+                              )
+                            })()
+                          ) : (
+                            <p className="whitespace-pre-wrap">{app.resume}</p>
+                          )}
+                        </div>
                       </div>
                     </CardContent>
                   </Card>

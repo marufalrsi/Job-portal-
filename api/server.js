@@ -82,6 +82,7 @@ const applicationSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true },
   phone: { type: String, required: true },
+  coverLetter: { type: String, required: false },
   resume: { type: String, required: true },
   cv: { type: cvSchema, required: false },
   createdAt: { type: Date, default: Date.now }
@@ -320,7 +321,9 @@ app.post('/api/apply', authenticateToken, async (req, res) => {
       return res.status(403).json({ error: 'Only job seekers can apply for jobs' });
     }
 
-      const { jobId, name, email, phone, resume, cv } = req.body;
+      const { jobId, name, email, phone, resume, coverLetter, cv } = req.body;
+
+    console.log('Received application data:', { jobId, name, email, phone, resume: resume?.substring(0, 50), coverLetter: coverLetter?.substring(0, 50), cv: !!cv });
 
     if (!jobId || !name || !email || !phone || !resume || !resume.trim()) {
       return res.status(400).json({ error: 'All fields and application summary are required' });
@@ -369,10 +372,13 @@ app.post('/api/apply', authenticateToken, async (req, res) => {
       name,
       email,
       phone,
+      coverLetter,
       resume,
       cv
     });
     await application.save();
+
+    console.log('Application saved with coverLetter:', !!application.coverLetter, 'Content:', application.coverLetter?.substring(0, 50));
 
     res.status(201).json({ message: 'Application submitted successfully', application });
   } catch (error) {
@@ -389,8 +395,12 @@ app.get('/api/apply/received', authenticateToken, async (req, res) => {
 
     const posterJobs = await Job.find({ posterId: req.user.id }).lean();
     const jobIds = posterJobs.map(job => job._id);
-    const applications = await Application.find({ jobId: { $in: jobIds } }).sort({ createdAt: -1 }).lean();
+    const applications = await Application.find({ jobId: { $in: jobIds } })
+      .select('jobId jobTitle applicantId name email phone coverLetter resume cv createdAt')
+      .sort({ createdAt: -1 })
+      .lean();
 
+    console.log('Returned applications:', applications.length, 'First app coverLetter:', applications[0]?.coverLetter?.substring(0, 50));
     res.json(applications);
   } catch (error) {
     console.error('Get applications error:', error);
@@ -404,6 +414,10 @@ app.get('/api/apply/job/:id', authenticateToken, async (req, res) => {
       return res.status(403).json({ error: 'Only job posters can view job applications' });
     }
 
+    if (!req.params.id || req.params.id === 'undefined') {
+      return res.status(400).json({ error: 'Invalid job ID' });
+    }
+
     const job = await Job.findById(req.params.id);
     if (!job) {
       return res.status(404).json({ error: 'Job not found' });
@@ -412,7 +426,12 @@ app.get('/api/apply/job/:id', authenticateToken, async (req, res) => {
       return res.status(403).json({ error: 'Access denied' });
     }
 
-    const applications = await Application.find({ jobId: req.params.id }).sort({ createdAt: -1 }).lean();
+    const applications = await Application.find({ jobId: req.params.id })
+      .select('jobId jobTitle applicantId name email phone coverLetter resume cv createdAt')
+      .sort({ createdAt: -1 })
+      .lean();
+
+    console.log('Job applications:', applications.length, 'First app coverLetter:', applications[0]?.coverLetter?.substring(0, 50));
     res.json(applications);
   } catch (error) {
     console.error('Get job applications error:', error);
@@ -431,6 +450,29 @@ app.get('/api/apply/my-applications', authenticateToken, async (req, res) => {
   } catch (error) {
     console.error('Get my applications error:', error);
     res.status(500).json({ error: 'Server error fetching your applications' });
+  }
+});
+
+app.get('/api/debug/applications', authenticateToken, async (req, res) => {
+  try {
+    if (req.user.role !== 'poster') {
+      return res.status(403).json({ error: 'Only job posters can access debug info' });
+    }
+    const applications = await Application.find().limit(5);
+    res.json({
+      message: 'Debug: Last 5 applications',
+      applications: applications.map(app => ({
+        _id: app._id,
+        name: app.name,
+        coverLetter: app.coverLetter,
+        coverLetterExists: !!app.coverLetter,
+        coverLetterLength: app.coverLetter?.length || 0,
+        resume: app.resume?.substring(0, 50) + '...'
+      }))
+    });
+  } catch (error) {
+    console.error('Debug error:', error);
+    res.status(500).json({ error: error.message });
   }
 });
 

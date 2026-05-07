@@ -30,7 +30,7 @@ export default function AuthForms({ selectedRole, onBack }) {
     setLoading(true)
 
     try {
-      const result = await login(loginEmail, loginPassword)
+      const result = await login(loginEmail, loginPassword, selectedRole)
       if (!result.success) {
         setError(result.error)
       }
