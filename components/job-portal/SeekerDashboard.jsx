@@ -38,7 +38,8 @@ const emptyCv = {
     {
       project: '',
       role: '',
-      years: ''
+      years: '',
+      description: ''
     }
   ],
   languages: ''
@@ -86,7 +87,7 @@ const generateCvText = (cv) => {
     `  ${index + 1}. ${edu.institution} | ${edu.country} | ${edu.passingYear} | ${edu.grade} | ${edu.subject}`
   ).join('\n')
   const experienceText = (cv.experience || []).map((exp, index) =>
-    `  ${index + 1}. ${exp.project} | ${exp.role} | ${exp.years} years`
+    `  ${index + 1}. ${exp.project} | ${exp.role} | ${exp.years} years\n      ${exp.description}`
   ).join('\n')
 
   return [
@@ -117,7 +118,7 @@ const isValidCv = (cv) => {
   if (invalidEducation) return false
 
   const invalidExperience = cv.experience.some(exp =>
-    !exp.project || !exp.role || !exp.years
+    !exp.project || !exp.role || !exp.years || !exp.description
   )
   if (invalidExperience) return false
 
@@ -298,6 +299,7 @@ export default function SeekerDashboard() {
   }
 
   const hasApplied = (jobId) => {
+    if (!jobId) return false
     const normalizedJobId = String(jobId)
     return appliedJobs.some(id => String(id) === normalizedJobId)
   }
@@ -322,7 +324,7 @@ export default function SeekerDashboard() {
 
   if (loading) {
     return (
-      <div className="flex min-h-[400px] items-center justify-center">
+      <div className="flex min-h-100 items-center justify-center">
         <div className="text-center">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto mb-4" />
           <p className="text-muted-foreground">Loading job listings...</p>
@@ -478,7 +480,7 @@ export default function SeekerDashboard() {
                 )}
               </CardContent>
               <CardFooter>
-                {hasApplied(job.id) ? (
+                {hasApplied(job._id || job.id) ? (
                   <Button variant="outline" disabled>
                     <CheckCircle className="mr-2 h-4 w-4 text-green-600" />
                     Application Submitted
@@ -605,7 +607,7 @@ export default function SeekerDashboard() {
       </Dialog>
 
       <Dialog open={isCvOpen} onOpenChange={setIsCvOpen}>
-        <DialogContent className="max-w-3xl">
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-hidden">
           <DialogHeader>
             <DialogTitle>{cvData?.firstName ? 'Edit Your CV' : 'Create Your CV'}</DialogTitle>
             <DialogDescription>
@@ -635,10 +637,10 @@ export default function SeekerDashboard() {
                 return
               }
               const invalidExperience = validatedCv.experience.some(exp =>
-                !exp.project || !exp.role || !exp.years
+                !exp.project || !exp.role || !exp.years || !exp.description
               )
               if (invalidExperience) {
-                setError('Please fill in all fields for each work experience entry.')
+                setError('Please fill in all fields and add details for each work experience entry.')
                 return
               }
               if (!validatedCv.languages.length) {
@@ -650,7 +652,8 @@ export default function SeekerDashboard() {
               setIsCvOpen(false)
               setSuccess('Your CV has been saved.')
             }}>
-            <div className="grid gap-4 py-4">
+            <div className="overflow-y-auto max-h-[72vh] pr-2">
+              <div className="grid gap-4 py-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="cv-firstName">First Name</Label>
@@ -706,7 +709,7 @@ export default function SeekerDashboard() {
                   required
                 />
               </div>
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="cv-gender">Gender</Label>
                   <Input
@@ -730,7 +733,7 @@ export default function SeekerDashboard() {
                     required
                   />
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-2 col-span-2">
                   <Label htmlFor="cv-languages">Language Skills</Label>
                   <Input
                     id="cv-languages"
@@ -801,7 +804,7 @@ export default function SeekerDashboard() {
                           required
                         />
                       </div>
-                      <div className="grid gap-4 md:grid-cols-3">
+                      <div className="grid gap-4 md:grid-cols-2">
                         <Input
                           id={`cv-education-passingYear-${index}`}
                           placeholder="Passing Year"
@@ -848,7 +851,7 @@ export default function SeekerDashboard() {
                       ...prev,
                       experience: [
                         ...prev.experience,
-                        { project: '', role: '', years: '' }
+                        { project: '', role: '', years: '', description: '' }
                       ]
                     }))}
                   >
@@ -874,10 +877,11 @@ export default function SeekerDashboard() {
                           </Button>
                         )}
                       </div>
-                      <div className="grid gap-4 md:grid-cols-3">
+                      <div className="grid gap-4 md:grid-cols-2">
                         <Input
                           id={`cv-experience-project-${index}`}
                           placeholder="Project"
+                          className="min-h-12"
                           value={exp.project}
                           onChange={(e) => setCvForm(prev => ({
                             ...prev,
@@ -888,6 +892,7 @@ export default function SeekerDashboard() {
                         <Input
                           id={`cv-experience-role-${index}`}
                           placeholder="Role"
+                          className="min-h-12"
                           value={exp.role}
                           onChange={(e) => setCvForm(prev => ({
                             ...prev,
@@ -898,10 +903,25 @@ export default function SeekerDashboard() {
                         <Input
                           id={`cv-experience-years-${index}`}
                           placeholder="Years"
+                          className="min-h-12"
                           value={exp.years}
                           onChange={(e) => setCvForm(prev => ({
                             ...prev,
                             experience: prev.experience.map((item, i) => i === index ? { ...item, years: e.target.value } : item)
+                          }))}
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2 mt-4">
+                        <Label htmlFor={`cv-experience-description-${index}`}>Details</Label>
+                        <Textarea
+                          id={`cv-experience-description-${index}`}
+                          placeholder="Describe your work, achievements, or responsibilities."
+                          value={exp.description}
+                          rows={4}
+                          onChange={(e) => setCvForm(prev => ({
+                            ...prev,
+                            experience: prev.experience.map((item, i) => i === index ? { ...item, description: e.target.value } : item)
                           }))}
                           required
                         />
@@ -911,6 +931,7 @@ export default function SeekerDashboard() {
                 </div>
               </div>
             </div>
+          </div>
             {error && (
               <Alert variant="destructive" className="mb-4">
                 <AlertCircle className="h-4 w-4" />
@@ -928,14 +949,14 @@ export default function SeekerDashboard() {
       </Dialog>
 
       <Dialog open={isCvPreviewOpen} onOpenChange={setIsCvPreviewOpen}>
-        <DialogContent className="max-w-3xl">
+        <DialogContent className="max-w-3xl max-h-[80vh] overflow-hidden">
           <DialogHeader>
             <DialogTitle>Your CV Preview</DialogTitle>
             <DialogDescription>
               Review the CV that will be shared with recruiters when you apply.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 rounded-lg border border-muted p-4 bg-muted/50 text-sm">
+          <div className="space-y-4 rounded-lg border border-muted p-4 bg-muted/50 text-sm overflow-y-auto max-h-[66vh]">
             <div className="grid gap-3 md:grid-cols-2">
               <div>
                 <p className="text-lg font-semibold">{cvData?.firstName} {cvData?.lastName}</p>
@@ -962,10 +983,11 @@ export default function SeekerDashboard() {
             <div>
               <p className="font-semibold">Work Experience</p>
               {(cvData?.experience || []).map((exp, index) => (
-                <div key={`preview-exp-${index}`} className="space-y-1">
+                <div key={`preview-exp-${index}`} className="space-y-2 mb-3">
                   <p className="font-semibold">Experience {index + 1}</p>
                   <p>{exp.project}</p>
                   <p>{exp.role} — {exp.years} years</p>
+                  <p className="whitespace-pre-line">{exp.description}</p>
                 </div>
               ))}
             </div>
