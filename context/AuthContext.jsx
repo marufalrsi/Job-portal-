@@ -5,7 +5,9 @@ import { createContext, useContext, useState, useEffect } from 'react'
 const AuthContext = createContext(null)
 
 const API_BASE_URL = typeof window !== 'undefined'
-  ? (['localhost', '127.0.0.1', '::1'].includes(window.location.hostname) ? 'http://localhost:5001' : '')
+  ? (['localhost', '127.0.0.1', '::1'].includes(window.location.hostname)
+      ? 'http://localhost:5001'
+      : process.env.NEXT_PUBLIC_API_URL || 'https://job-portal-api-gipl.onrender.com')
   : ''
 
 export function AuthProvider({ children }) {
