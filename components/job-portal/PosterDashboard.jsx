@@ -483,8 +483,16 @@ export default function PosterDashboard() {
                         <p className="font-semibold">Candidate CV</p>
                         {app.cv ? (
                           (() => {
-                            const education = Array.isArray(app.cv.education) ? app.cv.education[0] : app.cv.education
-                            const experience = Array.isArray(app.cv.experience) ? app.cv.experience[0] : app.cv.experience
+                            const educations = Array.isArray(app.cv.education)
+                              ? app.cv.education
+                              : app.cv.education && typeof app.cv.education === 'object'
+                                ? [app.cv.education]
+                                : []
+                            const experiences = Array.isArray(app.cv.experience)
+                              ? app.cv.experience
+                              : app.cv.experience && typeof app.cv.experience === 'object'
+                                ? [app.cv.experience]
+                                : []
                             return (
                               <div className="space-y-2">
                                 <p>{app.cv.firstName} {app.cv.lastName}</p>
@@ -492,11 +500,23 @@ export default function PosterDashboard() {
                                 <p>{app.cv.email}</p>
                                 <p>{app.cv.gender} · {app.cv.age} years</p>
                                 <p className="font-medium">Education:</p>
-                                <p>{education?.institution || 'N/A'} — {education?.subject || 'N/A'}</p>
-                                <p>{education?.country || 'N/A'} | {education?.passingYear || 'N/A'} | {education?.grade || 'N/A'}</p>
+                                {educations.length > 0 ? educations.map((edu, index) => (
+                                  <div key={`education-${index}`} className="space-y-1">
+                                    <p className="font-semibold">{edu?.institution || 'N/A'} — {edu?.subject || 'N/A'}</p>
+                                    <p>{edu?.country || 'N/A'} | {edu?.passingYear || 'N/A'} | {edu?.grade || 'N/A'}</p>
+                                  </div>
+                                )) : (
+                                  <p className="text-muted-foreground">No education details available.</p>
+                                )}
                                 <p className="font-medium">Experience:</p>
-                                <p>{experience?.project || 'N/A'}</p>
-                                <p>{experience?.role || 'N/A'} — {experience?.years || 'N/A'} years</p>
+                                {experiences.length > 0 ? experiences.map((exp, index) => (
+                                  <div key={`experience-${index}`} className="space-y-1">
+                                    <p className="font-semibold">{exp?.project || 'N/A'}</p>
+                                    <p>{exp?.role || 'N/A'} — {exp?.years || 'N/A'} years</p>
+                                  </div>
+                                )) : (
+                                  <p className="text-muted-foreground">No experience details available.</p>
+                                )}
                                 <p className="text-muted-foreground">Languages: {Array.isArray(app.cv.languages) ? app.cv.languages.join(', ') : app.cv.languages}</p>
                               </div>
                             )
@@ -654,8 +674,16 @@ export default function PosterDashboard() {
                           <p className="font-semibold">Candidate CV</p>
                           {app.cv ? (
                             (() => {
-                              const education = Array.isArray(app.cv.education) ? app.cv.education[0] : app.cv.education
-                              const experience = Array.isArray(app.cv.experience) ? app.cv.experience[0] : app.cv.experience
+                              const educations = Array.isArray(app.cv.education)
+                                ? app.cv.education
+                                : app.cv.education && typeof app.cv.education === 'object'
+                                  ? [app.cv.education]
+                                  : []
+                              const experiences = Array.isArray(app.cv.experience)
+                                ? app.cv.experience
+                                : app.cv.experience && typeof app.cv.experience === 'object'
+                                  ? [app.cv.experience]
+                                  : []
                               return (
                                 <div className="space-y-2">
                                   <p className="font-semibold">{app.cv.firstName} {app.cv.lastName}</p>
@@ -663,11 +691,23 @@ export default function PosterDashboard() {
                                   <p>{app.cv.email}</p>
                                   <p>{app.cv.gender} · {app.cv.age} years</p>
                                   <p className="font-medium">Education:</p>
-                                  <p>{education?.institution || 'N/A'} — {education?.subject || 'N/A'}</p>
-                                  <p>{education?.country || 'N/A'} | {education?.passingYear || 'N/A'} | {education?.grade || 'N/A'}</p>
+                                  {educations.length > 0 ? educations.map((edu, index) => (
+                                    <div key={`education-${index}`} className="space-y-1">
+                                      <p className="font-semibold">{edu?.institution || 'N/A'} — {edu?.subject || 'N/A'}</p>
+                                      <p>{edu?.country || 'N/A'} | {edu?.passingYear || 'N/A'} | {edu?.grade || 'N/A'}</p>
+                                    </div>
+                                  )) : (
+                                    <p className="text-muted-foreground">No education details available.</p>
+                                  )}
                                   <p className="font-medium">Experience:</p>
-                                  <p>{experience?.project || 'N/A'}</p>
-                                  <p>{experience?.role || 'N/A'} — {experience?.years || 'N/A'} years</p>
+                                  {experiences.length > 0 ? experiences.map((exp, index) => (
+                                    <div key={`experience-${index}`} className="space-y-1">
+                                      <p className="font-semibold">{exp?.project || 'N/A'}</p>
+                                      <p>{exp?.role || 'N/A'} — {exp?.years || 'N/A'} years</p>
+                                    </div>
+                                  )) : (
+                                    <p className="text-muted-foreground">No experience details available.</p>
+                                  )}
                                   <p className="text-muted-foreground">Languages: {Array.isArray(app.cv.languages) ? app.cv.languages.join(', ') : app.cv.languages}</p>
                                 </div>
                               )
